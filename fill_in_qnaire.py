@@ -220,8 +220,8 @@ def main():
     args = ArgConfig()
 
     # debug
-    args.qnaire_id = "3949"
-    args.option = 1
+    # args.qnaire_id = "3949"
+    # args.option = 1
 
     is_debug = False
     if os.path.isfile('config.ini'):
