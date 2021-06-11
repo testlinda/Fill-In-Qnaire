@@ -146,6 +146,8 @@ class FillInQnaire:
 
 
 def getDebugOption():
+    if not os.path.isfile('config.ini'):
+        return False
     import configparser
     parser = configparser.ConfigParser()
     parser.read("config.ini")
