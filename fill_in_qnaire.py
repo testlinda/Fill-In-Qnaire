@@ -4,7 +4,7 @@ import socket
 import argparse
 import time
 from datetime import datetime
-
+from get_gscript_data import GetGScriptData as gScript
 
 class ArgConfig:
     def __init__(self):
@@ -82,13 +82,12 @@ class FillInQnaire:
 
         self.slowdown()
 
-    def do4169(self, option):
+    def do4169(self, option, tasks):
         assert self.loginOK, 'You should login first'
+        assert option != 1 or tasks != "", 'Task list is empty'
 
         tryResult = self.tryLoadPage()
         assert tryResult, "Page loaded failed (%s)" % self.qnaire_id
-
-        tasks = "Software development\nBug fixing remotely"
 
         try:
             if option == 0:
@@ -146,6 +145,22 @@ class FillInQnaire:
         time.sleep(self.delay)
 
 
+def getDebugOption():
+    import configparser
+    parser = configparser.ConfigParser()
+    parser.read("config.ini")
+    return parser.get("Debug", "is_debug")
+
+
+def getDebugArgs():
+    import configparser
+    parser = configparser.ConfigParser()
+    parser.read("config.ini")
+    qnaire_id = parser.get("Debug", "qnaire_id")
+    option = parser.getint("Debug", "option")
+    return qnaire_id, option
+
+
 def is_connected():
     try:
         # connect to the host -- tells us if the host is actually
@@ -177,23 +192,15 @@ def init_webdriver(is_debug=False):
     return driver
 
 
-def get_config_info(is_debug=False):
-    try:
-        if is_debug:
-            import configparser
-            parser = configparser.ConfigParser()
-            parser.read("config.ini")
-            username = parser.get("Setting", "username")
-            password = parser.get("Setting", "password")
-            delay = parser.getint("Setting", "delay")
-        else:
-            username = os.environ.get("APP_CONFIG_USERNAME")
-            password = os.environ.get("APP_CONFIG_PASSWORD")
-            delay = int(os.environ.get("APP_CONFIG_DELAY"))
-    except Exception as ex:
-        assert False, "Read config failed: %s" % str(ex)
-
-    return username, password, delay
+def initial_gscript(is_debug=False):
+    if is_debug:
+        import configparser
+        parser = configparser.ConfigParser()
+        parser.read("config.ini")
+        api_link = parser.get("Setting", "url")
+    else:
+        api_link = os.environ.get("GSCRIPT_API_LINK")
+    return gScript(api_link)
 
 
 def get_qnaire_link_prefix(is_debug=False):
@@ -219,13 +226,9 @@ def main():
     print(get_time())
     args = ArgConfig()
 
-    # debug
-    # args.qnaire_id = "3949"
-    # args.option = 1
-
-    is_debug = False
-    if os.path.isfile('config.ini'):
-        is_debug = True
+    is_debug = getDebugOption()
+    if is_debug:
+        args.qnaire_id, args.option = getDebugArgs()
 
     while not is_connected():
         print("Internet is down, check again in 10 seconds...")
@@ -233,7 +236,8 @@ def main():
 
     try:
         driver = init_webdriver(is_debug)
-        username, password, delay = get_config_info(is_debug)
+        gscript = initial_gscript(is_debug)
+        username, password, delay = gscript.getConfig()
         link_prefix = get_qnaire_link_prefix(is_debug)
         fiq = FillInQnaire(driver)
         fiq.setCredential(username, password)
@@ -243,17 +247,24 @@ def main():
         if args.qnaire_id == "3949":
             fiq.do3949()
         elif args.qnaire_id == "4169":
-            fiq.do4169(args.option)
+            if not gscript.getHolidaybool():
+                tasks = "" if args.option == 0 else gscript.getTasks()
+                fiq.do4169(args.option, tasks)
         else:
             raise Exception("Invalid qnaire id")
         fiq.checkSuccess()
         print("Everything is done correctly.")
+        gscript.writeLog(args.qnaire_id, "")
         time.sleep(1)
         driver.quit()
 
     except Exception as ex:
-        print(str(ex))
-        print("Something is wrong.")
+        try:
+            gscript.writeLog(args.qnaire_id, str(ex))
+        except:
+            print("Write log failed.")
+
+        print("Something is wrong: " + str(ex))
 
 
 if __name__ == '__main__':
