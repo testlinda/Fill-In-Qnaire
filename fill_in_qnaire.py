@@ -246,23 +246,29 @@ def main():
         fiq.setConfig(delay)
         fiq.gotoPage(link_prefix, args.qnaire_id)
         fiq.login()
+        feedback_msg = ""
         if args.qnaire_id == "3949":
             fiq.do3949()
+            fiq.checkSuccess()
         elif args.qnaire_id == "4169":
             if not gscript.getHolidaybool():
                 tasks = "" if args.option == 0 else gscript.getTasks()
                 fiq.do4169(args.option, tasks)
+                fiq.checkSuccess()
+            else:
+                feedback_msg = "did not fill in anything cause it's holiday >.0"
+
         else:
             raise Exception("Invalid qnaire id")
-        fiq.checkSuccess()
+
         print("Everything is done correctly.")
-        gscript.writeLog(args.qnaire_id, "")
+        gscript.writeLog(args.qnaire_id, "ok", feedback_msg)
         time.sleep(1)
         driver.quit()
 
     except Exception as ex:
         try:
-            gscript.writeLog(args.qnaire_id, str(ex))
+            gscript.writeLog(args.qnaire_id, "not ok", str(ex))
         except:
             print("Write log failed.")
 
