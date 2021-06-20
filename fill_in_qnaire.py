@@ -65,14 +65,16 @@ class FillInQnaire:
         assert tryResult, "Page loaded failed (%s)" % self.qnaire_id
 
         try:
-            self.webdriver.find_element_by_id("edit-submitted-work-area-1").click()
-
-            option_no1 = self.webdriver.find_elements_by_xpath("//*[text()[contains(.,'無')]]")
+            option_no1 = self.webdriver.find_elements_by_xpath("//*[text()[contains(.,'居家辦公')]]")
             for element in option_no1:
                 self.webdriver.execute_script("arguments[0].click();", element)
 
-            option_no2 = self.webdriver.find_elements_by_xpath("//*[text()[contains(.,'否/')]]")
+            option_no2 = self.webdriver.find_elements_by_xpath("//*[text()[contains(.,'/No')]]")
             for element in option_no2:
+                self.webdriver.execute_script("arguments[0].click();", element)
+
+            option_no3 = self.webdriver.find_elements_by_xpath("//*[text()[contains(.,'am willing')]]")
+            for element in option_no3:
                 self.webdriver.execute_script("arguments[0].click();", element)
 
             self.webdriver.find_element_by_name('op').click()
@@ -116,7 +118,7 @@ class FillInQnaire:
         try:
             self.webdriver.find_element_by_class_name("webform-confirmation")
         except Exception as ex:
-            assert False, "Failed to fill in the form (%s): %s" % (self.qnaire_id, str(ex))
+            assert False, "Failed to check success page (%s): %s" % (self.qnaire_id, str(ex))
 
     def tryLoadPage(self):
         retryTime = 0
