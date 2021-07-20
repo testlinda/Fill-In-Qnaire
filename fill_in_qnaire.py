@@ -76,6 +76,10 @@ class FillInQnaire:
             option_no3 = self.webdriver.find_elements_by_xpath("//*[text()[contains(.,'am willing')]]")
             for element in option_no3:
                 self.webdriver.execute_script("arguments[0].click();", element)
+				
+			option_no4 = self.webdriver.find_elements_by_xpath("//*[text()[contains(.,'Moderna vaccine only')]]")
+            for element in option_no4:
+                self.webdriver.execute_script("arguments[0].click();", element)
 
             self.webdriver.find_element_by_name('op').click()
 
