@@ -58,28 +58,17 @@ class FillInQnaire:
 
         self.slowdown()
 
-    def do3949(self):
+    def do3949(self, keywords):
         assert self.loginOK, 'You should login first'
 
         tryResult = self.tryLoadPage()
         assert tryResult, "Page loaded failed (%s)" % self.qnaire_id
 
         try:
-            option_no1 = self.webdriver.find_elements_by_xpath("//*[text()[contains(.,'居家辦公')]]")
-            for element in option_no1:
-                self.webdriver.execute_script("arguments[0].click();", element)
-
-            option_no2 = self.webdriver.find_elements_by_xpath("//*[text()[contains(.,'/No')]]")
-            for element in option_no2:
-                self.webdriver.execute_script("arguments[0].click();", element)
-
-            option_no3 = self.webdriver.find_elements_by_xpath("//*[text()[contains(.,'am willing')]]")
-            for element in option_no3:
-                self.webdriver.execute_script("arguments[0].click();", element)
-
-            option_no4 = self.webdriver.find_elements_by_xpath("//*[text()[contains(.,'Moderna vaccine only')]]")
-            for element in option_no4:
-                self.webdriver.execute_script("arguments[0].click();", element)
+            for keyword in keywords:
+                elements = self.webdriver.find_elements_by_xpath("//*[text()[contains(.,'" + keyword + "')]]")
+                for element in elements:
+                    self.webdriver.execute_script("arguments[0].click();", element)
 
             self.webdriver.find_element_by_name('op').click()
 
@@ -254,7 +243,8 @@ def main():
         fiq.login()
         feedback_msg = ""
         if args.qnaire_id == "3949":
-            fiq.do3949()
+            keywords = gscript.getKeywords3949()
+            fiq.do3949(keywords)
             fiq.checkSuccess()
         elif args.qnaire_id == "4169":
             if not gscript.getHolidaybool():

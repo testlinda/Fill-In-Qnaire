@@ -53,6 +53,16 @@ class GetGScriptData:
         else:
             assert False, 'error: ' + jsonstr["message"]
 
+    def getKeywords3949(self):
+        assert self.url != "", 'url is invalid'
+        payload = {'type': 'keywords3949'}
+        res = requests.get(url=self.url, params=payload)
+        jsonstr = json.loads(res.text)
+        if jsonstr["status"]:
+            return jsonstr["result"]
+        else:
+            assert False, 'error: ' + jsonstr["message"]
+
     def writeLog(self, qnaireId, status, message):
         assert self.url != "", 'url is invalid'
         data = {"type": "log", "data": {"qnaireId": qnaireId, "status": status, "message": message}}
