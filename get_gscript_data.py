@@ -19,6 +19,19 @@ class GetGScriptData:
         else:
             assert False, 'error: ' + jsonstr["message"]
 
+    def getEnabled(self, qnaire_id):
+        assert self.url != "", 'url is invalid'
+        payload = {'type': 'enabled'}
+        res = requests.get(url=self.url, params=payload)
+        jsonstr = json.loads(res.text)
+        if jsonstr["status"]:
+            for key in jsonstr["result"]:
+                if key == qnaire_id:
+                    return jsonstr["result"].get(key)
+        else:
+            assert False, 'error: ' + jsonstr["message"]
+        return False
+
     def getRecentLog(self, count):
         assert self.url != "", 'url is invalid'
         payload = {'type': 'log', 'count': count}

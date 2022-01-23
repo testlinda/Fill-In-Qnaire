@@ -235,6 +235,7 @@ def main():
         driver = init_webdriver(is_debug)
         gscript = initial_gscript(is_debug)
         username, password, delay = gscript.getConfig()
+        enabled = gscript.getEnabled(args.qnaire_id)
         link_prefix = get_qnaire_link_prefix(is_debug)
         fiq = FillInQnaire(driver)
         fiq.setCredential(username, password)
@@ -242,20 +243,24 @@ def main():
         fiq.gotoPage(link_prefix, args.qnaire_id)
         fiq.login()
         feedback_msg = ""
-        if args.qnaire_id == "3949":
-            keywords = gscript.getKeywords3949()
-            fiq.do3949(keywords)
-            fiq.checkSuccess()
-        elif args.qnaire_id == "4169":
-            if not gscript.getHolidaybool():
-                tasks = "" if args.option == 0 else gscript.getTasks()
-                fiq.do4169(args.option, tasks)
-                fiq.checkSuccess()
-            else:
-                feedback_msg = "did not fill in anything cause it's holiday >.0"
 
+        if not enabled:
+            feedback_msg = "This function is disabled."
         else:
-            raise Exception("Invalid qnaire id")
+            if args.qnaire_id == "3949":
+                keywords = gscript.getKeywords3949()
+                fiq.do3949(keywords)
+                fiq.checkSuccess()
+            elif args.qnaire_id == "4169":
+                if not gscript.getHolidaybool():
+                    tasks = "" if args.option == 0 else gscript.getTasks()
+                    fiq.do4169(args.option, tasks)
+                    fiq.checkSuccess()
+                else:
+                    feedback_msg = "did not fill in anything cause it's holiday >.0"
+
+            else:
+                raise Exception("Invalid qnaire id")
 
         print("Everything is done correctly.")
         gscript.writeLog(args.qnaire_id, "ok", feedback_msg)
