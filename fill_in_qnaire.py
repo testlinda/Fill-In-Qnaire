@@ -92,7 +92,8 @@ class FillInQnaire:
             elif option == 1:
                 elements = self.webdriver.find_elements_by_xpath("//*[text()[contains(.,'下班')]]")
                 for element in elements:
-                    self.webdriver.execute_script("arguments[0].click();", element)
+                    if element.text == '下班':
+                        self.webdriver.execute_script("arguments[0].click();", element)
 
                 self.webdriver.find_element_by_id('edit-submitted-note').send_keys(tasks)
 
